@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>FormDialogShell runtime test</title>
+</head>
+<body>
+  <div id="app">TEST_APP</div>
+  <div id="log">pending</div>
+  <script type="module">
+    import { createElement as h, useState, useEffect } from "http://localhost:5174/@react-refresh"
+    import { createRoot } from "http://localhost:5174/node_modules/.vite/deps/react-dom_client.js"
+    import { FormDialogShell } from "http://localhost:5174/src/components/app/form.dialog.shell.tsx"
+
+    const logEl = document.getElementById("log")
+
+    function App() {
+      const [open, setOpen] = useState(true)
+      const [board, setBoard] = useState({ name: "", description: "" })
+      const [submitted, setSubmitted] = useState(null)
+      const [selected, setSelected] = useState("")
+      const [canceled, setCanceled] = useState(false)
+
+      useEffect(() => {
+        logEl.textContent = JSON.stringify({
+          submitted, selected, canceled,
+          boardName: board.name,
+          open,
+        })
+      }, [submitted, selected, canceled, board.name, open])
+
+      return h(FormDialogShell, {
+        open,
+        onOpenChange: (v) => { setOpen(v); if (!v) setCanceled(true) },
+        title: "Create Board",
+        description: "Bikin board baru",
+        state: { data: board, setData: setBoard },
+        fields: [
+          { name: "name", label: "Nama Board", type: "text", required: true },
+          { name: "provider", label: "Provider", type: "select", options: [{ label: "A", value: "1" }, { label: "B", value: "2" }] },
+        ],
+        onSubmit: (data) => setSubmitted(data),
+        submitLabel: "Simpan",
+        cancelLabel: "Batal",
+      })
+    }
+
+    createRoot(document.getElementById("app")).render(h(App))
+  </script>
+</body>
+</html>
