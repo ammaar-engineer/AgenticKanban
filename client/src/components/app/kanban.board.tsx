@@ -1,36 +1,59 @@
-import { Plus } from "lucide-react";
-import { useState } from "react";
+import { Plus, Trash2 } from "lucide-react"
+import { useState } from "react"
 
-import { CreateLayerDialog } from "@/components/dialog/create.kanban.layer.dialog";
-import { Button } from "@/components/ui/button";
-import { KanbanLayer } from "./kanban.layer";
+import { CreateLayerDialog } from "@/components/dialog/create.kanban.layer.dialog"
+import { Button } from "@/components/ui/button"
+import type { Board } from "@/stores/kanban.store"
+import { useKanbanStore } from "@/stores/kanban.store"
+import { KanbanLayer } from "./kanban.layer"
 
-export type Agent = { id: number; name: string; model_id: string }
-
-export type Layer = { id: number; name: string; agents: Agent[] }
-
-export type Board = { id: number; name: string; description?: string; layers: Layer[] }
-
-export function KanbanBoard({
-    board,
-    onAddLayer,
-}: {
-    board: Board
-    onAddLayer: (boardId: number, name: string) => void
-}) {
+export function KanbanBoard({ board }: { board: Board }) {
     const [layerDialogOpen, setLayerDialogOpen] = useState(false)
+    const mutate = useKanbanStore(s => s.mutate)
+
+    const handleAddLayer = (name: string) => {
+        mutate(state => {
+            state.boards = state.boards.map(b =>
+                b.id === board.id
+                    ? { ...b, layers: [...b.layers, { id: b.layers.length, name, agents: [] }] }
+                    : b
+            )
+        })
+    }
+
+    const handleDeleteBoard = () => {
+        mutate(state => {
+            state.boards = state.boards.filter(b => b.id !== board.id)
+            if (state.activeId === board.id) state.activeId = null
+        })
+    }
 
     return (
         <div className="flex h-full min-h-0 w-full flex-col">
-            <div className="px-4 pt-4 pb-4">
-                <h2 className="text-lg font-semibold text-foreground">{board.name}</h2>
-                {board.description && (
-                    <p className="text-sm text-muted-foreground">{board.description}</p>
-                )}
+            <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-4">
+                <div>
+                    <h2 className="text-lg font-semibold text-foreground">{board.name}</h2>
+                    {board.description && (
+                        <p className="text-sm text-muted-foreground">{board.description}</p>
+                    )}
+                </div>
+                <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label={`Delete board ${board.name}`}
+                    onClick={handleDeleteBoard}
+                    className="text-muted-foreground hover:text-destructive w-fit flex items-center gap-2 px-2 py-4"
+                >
+                    <Trash2 /> Remove board
+                </Button>
             </div>
             <div className="flex w-full min-h-0 flex-1 items-start gap-4 overflow-x-auto p-4">
                 {board.layers.map(layer => (
-                    <KanbanLayer key={layer.id} layer={layer} />
+                    <KanbanLayer
+                        key={layer.id}
+                        boardId={board.id}
+                        layer={layer}
+                    />
                 ))}
                 <Button
                     variant="outline"
@@ -46,7 +69,7 @@ export function KanbanBoard({
                 open={layerDialogOpen}
                 onOpenChange={setLayerDialogOpen}
                 onSubmit={({ name }) => {
-                    onAddLayer(board.id, name)
+                    handleAddLayer(name)
                     setLayerDialogOpen(false)
                 }}
             />

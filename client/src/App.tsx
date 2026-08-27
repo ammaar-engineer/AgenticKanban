@@ -20,6 +20,7 @@ import type { CSSProperties } from 'react'
 import { type ReactNode } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { MainDashboard } from './pages/main.dashboard'
+import { ProvidersDashboard } from './pages/providers.dashboard'
 
 
 const navItems = [
@@ -35,6 +36,7 @@ type AppRoute = {
 
 const app_routes: AppRoute[] = [
   { element: <MainDashboard />, path: '/dashboard' },
+  { element: <ProvidersDashboard />, path: '/providers' },
 ]
 
 function Layout() {

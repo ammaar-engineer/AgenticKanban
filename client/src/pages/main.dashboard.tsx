@@ -1,34 +1,32 @@
 import { Plus } from "lucide-react"
 import { useState } from "react"
 
-import type { Board } from "@/components/app/kanban.board"
 import { KanbanBoard } from "@/components/app/kanban.board"
 import { CreateKanbanBoardDialog, type CreateKanbanBoardValues } from "@/components/dialog/create.kanban.board.dialog"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { selectActiveBoard, type Board, useKanbanStore } from "@/stores/kanban.store"
 
 export function MainDashboard() {
-    const [boards, setBoards] = useState<Board[]>([])
-    const [activeId, setActiveId] = useState<number | null>(null)
     const [dialogOpen, setDialogOpen] = useState(false)
-    const activeBoard = boards.find(b => b.id === activeId) ?? null
+
+    const boards = useKanbanStore(s => s.boards)
+    const activeId = useKanbanStore(s => s.activeId)
+    const mutate = useKanbanStore(s => s.mutate)
+    const activeBoard = useKanbanStore(selectActiveBoard)
 
     const handleCreate = (values: CreateKanbanBoardValues) => {
-        const board: Board = {
-            id: boards.length,
-            name: values.name,
-            description: values.description,
-            layers: [],
-        }
-        setBoards(prev => [...prev, board])
-        setActiveId(board.id)
+        mutate(state => {
+            const board: Board = {
+                id: state.boards.length,
+                name: values.name,
+                description: values.description,
+                layers: [],
+            }
+            state.boards.push(board)
+            state.activeId = board.id
+        })
         setDialogOpen(false)
-    }
-
-    const handleAddLayer = (boardId: number, name: string) => {
-        setBoards(prev => prev.map(b =>
-            b.id === boardId ? { ...b, layers: [...b.layers, { id: b.layers.length, name, agents: [] }] } : b
-        ))
     }
 
     return (
@@ -48,9 +46,9 @@ export function MainDashboard() {
                         key={board.id}
                         variant="ghost"
                         size="sm"
-                        onClick={() => setActiveId(board.id)}
+                        onClick={() => mutate(state => { state.activeId = board.id })}
                         className={cn(
-                            board.id === activeId && "bg-primary/10 border border-b border-primary text-primary hover:bg-primary/15",
+                            board.id === activeId && "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
                             "px-3 py-3"
                         )}
                     >
@@ -60,7 +58,7 @@ export function MainDashboard() {
             </div>
 
             {activeBoard ? (
-                <KanbanBoard board={activeBoard} onAddLayer={handleAddLayer} />
+                <KanbanBoard board={activeBoard} />
             ) : (
                 <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center text-muted-foreground">
                     <h2 className="text-lg font-semibold text-foreground">Belum ada board</h2>
