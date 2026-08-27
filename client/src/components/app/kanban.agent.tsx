@@ -7,30 +7,20 @@ import { useKanbanStore } from "@/stores/kanban.store"
 
 export function KanbanAgent({
     agent,
-    boardId,
-    layerId,
+    boardIndex,
+    layerIndex,
+    agentIndex,
 }: {
     agent: Agent
-    boardId: number
-    layerId: number
+    boardIndex: number
+    layerIndex: number
+    agentIndex: number
 }) {
     const mutate = useKanbanStore(s => s.mutate)
 
     const handleDeleteAgent = () => {
         mutate(state => {
-            state.boards = state.boards.map(board => {
-                if (board.id !== boardId) return board
-
-
-                const layers = board.layers.map(layer => {
-                    if (layer.id !== layerId) return layer
-
-                    const remainingAgents = layer.agents.filter(a => a.id !== agent.id)
-                    return { ...layer, agents: remainingAgents }
-                })
-
-                return { ...board, layers }
-            })
+            state.boards[boardIndex].layers[layerIndex].agents.splice(agentIndex, 1)
         })
     }
 

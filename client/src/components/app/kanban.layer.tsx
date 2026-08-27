@@ -8,20 +8,18 @@ import { KanbanAgent } from "./kanban.agent"
 
 export function KanbanLayer({
     layer,
-    boardId,
+    boardIndex,
+    layerIndex,
 }: {
     layer: Layer
-    boardId: number
+    boardIndex: number
+    layerIndex: number
 }) {
     const mutate = useKanbanStore(s => s.mutate)
 
     const handleDeleteLayer = () => {
         mutate(state => {
-            state.boards = state.boards.map(b =>
-                b.id === boardId
-                    ? { ...b, layers: b.layers.filter(l => l.id !== layer.id) }
-                    : b
-            )
+            state.boards[boardIndex].layers.splice(layerIndex, 1)
         })
     }
 
@@ -50,17 +48,18 @@ export function KanbanLayer({
                 </span>
                 <span className="flex items-center gap-1">
                     <span className="font-semibold w-fit mb-2">
-                        Queue: {layer.id}
+                        Queue: {layerIndex}
                     </span>
                 </span>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 overflow-y-scroll p-3">
-                {layer.agents.map(agent => (
+                {layer.agents.map((agent, agentIndex) => (
                     <KanbanAgent
-                        key={agent.id}
+                        key={agentIndex}
                         agent={agent}
-                        boardId={boardId}
-                        layerId={layer.id}
+                        boardIndex={boardIndex}
+                        layerIndex={layerIndex}
+                        agentIndex={agentIndex}
                     />
                 ))}
                 <Button className={'text-[1.1em] py-5'} variant={'secondary'}>Insert agents</Button>

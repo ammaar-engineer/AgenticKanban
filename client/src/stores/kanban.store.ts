@@ -1,13 +1,13 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-export type Agent = { id: number; name: string; model_id: string }
-export type Layer = { id: number; name: string; agents: Agent[] }
-export type Board = { id: number; name: string; description?: string; layers: Layer[] }
+export type Agent = { name: string; model: string,  }
+export type Layer = { name: string; agents: Agent[] }
+export type Board = { name: string; description?: string; layers: Layer[] }
 
 export type KanbanDraft = {
     boards: Board[]
-    activeId: number | null
+    activeBoardIndex: number | null
 }
 
 type KanbanStore = KanbanDraft & {
@@ -17,10 +17,10 @@ type KanbanStore = KanbanDraft & {
 export const useKanbanStore = create<KanbanStore>()(
     immer(set => ({
         boards: [],
-        activeId: null,
+        activeBoardIndex: null,
         mutate: recipe => set(recipe),
     }))
 )
 
 export const selectActiveBoard = (s: KanbanStore) =>
-    s.boards.find(b => b.id === s.activeId) ?? null
+    s.activeBoardIndex === null ? null : s.boards[s.activeBoardIndex] ?? null

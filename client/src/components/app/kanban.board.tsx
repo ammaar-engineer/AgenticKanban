@@ -7,24 +7,24 @@ import type { Board } from "@/stores/kanban.store"
 import { useKanbanStore } from "@/stores/kanban.store"
 import { KanbanLayer } from "./kanban.layer"
 
-export function KanbanBoard({ board }: { board: Board }) {
+export function KanbanBoard({ board, boardIndex }: { board: Board; boardIndex: number }) {
     const [layerDialogOpen, setLayerDialogOpen] = useState(false)
     const mutate = useKanbanStore(s => s.mutate)
 
     const handleAddLayer = (name: string) => {
         mutate(state => {
-            state.boards = state.boards.map(b =>
-                b.id === board.id
-                    ? { ...b, layers: [...b.layers, { id: b.layers.length, name, agents: [] }] }
-                    : b
-            )
+            state.boards[boardIndex].layers.push({ name, agents: [] })
         })
     }
 
     const handleDeleteBoard = () => {
         mutate(state => {
-            state.boards = state.boards.filter(b => b.id !== board.id)
-            if (state.activeId === board.id) state.activeId = null
+            state.boards.splice(boardIndex, 1)
+            if (boardIndex === state.activeBoardIndex) {
+                state.activeBoardIndex = null
+            } else if (state.activeBoardIndex !== null && boardIndex < state.activeBoardIndex) {
+                state.activeBoardIndex--
+            }
         })
     }
 
@@ -48,10 +48,11 @@ export function KanbanBoard({ board }: { board: Board }) {
                 </Button>
             </div>
             <div className="flex w-full min-h-0 flex-1 items-start gap-4 overflow-x-auto p-4">
-                {board.layers.map(layer => (
+                {board.layers.map((layer, layerIndex) => (
                     <KanbanLayer
-                        key={layer.id}
-                        boardId={board.id}
+                        key={layerIndex}
+                        boardIndex={boardIndex}
+                        layerIndex={layerIndex}
                         layer={layer}
                     />
                 ))}

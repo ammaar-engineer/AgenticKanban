@@ -11,20 +11,19 @@ export function MainDashboard() {
     const [dialogOpen, setDialogOpen] = useState(false)
 
     const boards = useKanbanStore(s => s.boards)
-    const activeId = useKanbanStore(s => s.activeId)
+    const activeBoardIndex = useKanbanStore(s => s.activeBoardIndex)
     const mutate = useKanbanStore(s => s.mutate)
     const activeBoard = useKanbanStore(selectActiveBoard)
 
     const handleCreate = (values: CreateKanbanBoardValues) => {
         mutate(state => {
             const board: Board = {
-                id: state.boards.length,
                 name: values.name,
                 description: values.description,
                 layers: [],
             }
             state.boards.push(board)
-            state.activeId = board.id
+            state.activeBoardIndex = state.boards.length - 1
         })
         setDialogOpen(false)
     }
@@ -41,14 +40,14 @@ export function MainDashboard() {
 
             {/* Board picker */}
             <div className="flex gap-2 border-b border-border/60 px-2 py-3 w-full overflow-x-scroll items-center">
-                {boards.map(board => (
+                {boards.map((board, boardIndex) => (
                     <Button
-                        key={board.id}
+                        key={boardIndex}
                         variant="ghost"
                         size="sm"
-                        onClick={() => mutate(state => { state.activeId = board.id })}
+                        onClick={() => mutate(state => { state.activeBoardIndex = boardIndex })}
                         className={cn(
-                            board.id === activeId && "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
+                            boardIndex === activeBoardIndex && "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
                             "px-3 py-3"
                         )}
                     >
@@ -58,7 +57,7 @@ export function MainDashboard() {
             </div>
 
             {activeBoard ? (
-                <KanbanBoard board={activeBoard} />
+                <KanbanBoard board={activeBoard} boardIndex={activeBoardIndex!} />
             ) : (
                 <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center text-muted-foreground">
                     <h2 className="text-lg font-semibold text-foreground">Belum ada board</h2>
