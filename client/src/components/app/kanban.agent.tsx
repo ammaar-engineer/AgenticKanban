@@ -49,7 +49,7 @@ export function KanbanAgent({
             <CardContent className="flex flex-col gap-1.5">
                 <span className="flex flex-wrap gap-1">
                     <span className="rounded-full px-2 py-0.5 font-mono text-[10px] text-white border">
-                        {agent.model_id}
+                        {agent.model}
                     </span>
                 </span>
             </CardContent>

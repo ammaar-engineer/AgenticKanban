@@ -47,7 +47,7 @@ export function CreateKanbanBoardDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <form id="create-board-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form id="create-board-form" onSubmit={handleSubmit} className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto pr-1">
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="board-name">Nama</Label>
                         <Input

@@ -1,6 +1,10 @@
+import { useState } from "react"
+
+import { PickAgentDialog } from "@/components/dialog/pick.agent.dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import type { Layer } from "@/stores/kanban.store"
+import type { AgentType } from "@/stores/agents.store"
+import type { Agent, Layer } from "@/stores/kanban.store"
 import { useKanbanStore } from "@/stores/kanban.store"
 import { Trash2 } from "lucide-react"
 import { Button } from "../ui/button"
@@ -16,10 +20,32 @@ export function KanbanLayer({
     layerIndex: number
 }) {
     const mutate = useKanbanStore(s => s.mutate)
+    const [pickOpen, setPickOpen] = useState(false)
 
     const handleDeleteLayer = () => {
         mutate(state => {
             state.boards[boardIndex].layers.splice(layerIndex, 1)
+        })
+    }
+
+    const handleSyncAgents = (toAdd: AgentType[], toRemove: Agent[]) => {
+        mutate(state => {
+            const layer = state.boards[boardIndex].layers[layerIndex]
+
+            // Remove agents (match by name+model+provider)
+            toRemove.forEach(agentToRemove => {
+                const removeKey = `${agentToRemove.name}|${agentToRemove.model}|${agentToRemove.provider}`
+                const index = layer.agents.findIndex(a =>
+                    `${a.name}|${a.model}|${a.provider}` === removeKey
+                )
+                if (index !== -1) {
+                    layer.agents.splice(index, 1)
+                }
+            })
+
+            // Add new agents
+            const agentsToAdd: Agent[] = toAdd.map(({ name, model, provider }) => ({ name, model, provider }))
+            layer.agents.push(...agentsToAdd)
         })
     }
 
@@ -62,8 +88,18 @@ export function KanbanLayer({
                         agentIndex={agentIndex}
                     />
                 ))}
-                <Button className={'text-[1.1em] py-5'} variant={'secondary'}>Insert agents</Button>
+                <Button
+                    className={'text-[1.1em] py-5'}
+                    variant={'secondary'}
+                    onClick={() => setPickOpen(true)}
+                >Pick agents</Button>
             </CardContent>
+            <PickAgentDialog
+                open={pickOpen}
+                onOpenChange={setPickOpen}
+                onSync={handleSyncAgents}
+                existingAgents={layer.agents}
+            />
         </Card>
     )
 }

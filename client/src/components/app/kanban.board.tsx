@@ -3,6 +3,7 @@ import { useState } from "react"
 
 import { CreateLayerDialog } from "@/components/dialog/create.kanban.layer.dialog"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import type { Board } from "@/stores/kanban.store"
 import { useKanbanStore } from "@/stores/kanban.store"
 import { KanbanLayer } from "./kanban.layer"
@@ -36,6 +37,14 @@ export function KanbanBoard({ board, boardIndex }: { board: Board; boardIndex: n
                     {board.description && (
                         <p className="text-sm text-muted-foreground">{board.description}</p>
                     )}
+                    <div className="py-3 flex gap-3">
+                        <Button className={cn('animate-execute-glow')}>
+                            Execute boards
+                        </Button>
+                        <Button variant={'outline'}>
+                            Board logs
+                        </Button>
+                    </div>
                 </div>
                 <Button
                     variant="ghost"

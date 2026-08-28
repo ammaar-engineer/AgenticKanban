@@ -1,6 +1,7 @@
 import { Bot, Plus, Trash2 } from "lucide-react"
 import { useState } from "react"
 
+import { AgentDetailDialog } from "@/components/dialog/agents.detail.dialog"
 import { CreateAgentDialog, type CreateAgentValues } from "@/components/dialog/create.agent.dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,6 +11,8 @@ import { useAgentStore, type AgentType } from "@/stores/agents.store"
 export function AgentsDashboard() {
     const { mutate, agents } = useAgentStore()
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+    const [selectedAgent, setSelectedAgent] = useState<AgentType | null>(null)
 
     const handleCreate = (values: CreateAgentValues) => {
         const agent: AgentType = {
@@ -30,6 +33,11 @@ export function AgentsDashboard() {
         })
     }
 
+    const handleCardClick = (agent: AgentType) => {
+        setSelectedAgent(agent)
+        setDetailDialogOpen(true)
+    }
+
     return (
         <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden">
             {/* Section 1: Action panel */}
@@ -47,14 +55,18 @@ export function AgentsDashboard() {
                         {agents.map((agent, i) => (
                             <Card
                                 key={i}
-                                className="group relative flex-row gap-3 pl-4 rounded-xl pt-4 py-4 transition-colors"
+                                onClick={() => handleCardClick(agent)}
+                                className="group relative flex-row gap-3 pl-4 rounded-xl pt-4 py-3.5 transition-colors cursor-pointer hover:bg-accent/50"
                             >
                                 {/* Delete — top-right, hidden sampai hover */}
                                 <Button
                                     variant="ghost"
                                     size="icon-sm"
                                     aria-label={`Delete ${agent.name}`}
-                                    onClick={() => handleDelete(agent.name)}
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleDelete(agent.name)
+                                    }}
                                     className="absolute top-3 right-3 opacity-0 text-muted-foreground transition-opacity group-hover:opacity-100 hover:text-destructive"
                                 >
                                     <Trash2 />
@@ -74,7 +86,7 @@ export function AgentsDashboard() {
                                         </h3>
 
                                         {/* Metadata — font mono, chip */}
-                                        <div className="flex flex-wrap gap-1.5">
+                                        <div className="flex flex-wrap gap-2">
                                             <Badge size="sm" className="font-mono">
                                                 <span className="text-muted-foreground">Model:</span>
                                                 {agent.model}
@@ -104,6 +116,11 @@ export function AgentsDashboard() {
             </div>
 
             <CreateAgentDialog open={dialogOpen} onOpenChange={setDialogOpen} onSubmit={handleCreate} />
+            <AgentDetailDialog
+                open={detailDialogOpen}
+                onOpenChange={setDetailDialogOpen}
+                agent={selectedAgent}
+            />
         </div>
     )
 }

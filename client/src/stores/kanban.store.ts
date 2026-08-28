@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-export type Agent = { name: string; model: string,  }
+export type Agent = { name: string; model: string, provider: string}
 export type Layer = { name: string; agents: Agent[] }
 export type Board = { name: string; description?: string; layers: Layer[] }
 

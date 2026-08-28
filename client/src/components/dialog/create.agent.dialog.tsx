@@ -71,7 +71,7 @@ export function CreateAgentDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <form id="create-agent-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form id="create-agent-form" onSubmit={handleSubmit} className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto pr-1">
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="agent-name">Nama</Label>
                         <Input
@@ -112,6 +112,7 @@ export function CreateAgentDialog({
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="agent-personality">Personality</Label>
                         <Textarea
+                            className="h-80"
                             id="agent-personality"
                             value={personality}
                             onChange={(e) => setPersonality(e.target.value)}
