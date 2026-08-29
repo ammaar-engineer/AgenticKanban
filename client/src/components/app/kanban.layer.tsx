@@ -52,8 +52,8 @@ export function KanbanLayer({
                 }
             })
 
-            // Add new agents
-            const agentsToAdd: Agent[] = toAdd.map(({ name, model, provider }) => ({ id: crypto.randomUUID(), name, model, provider }))
+            // Add new agents (convert AgentType from server to local Agent type)
+            const agentsToAdd: Agent[] = toAdd.map(({ name, model_id, provider }) => ({ id: crypto.randomUUID(), name, model: model_id, provider: provider.name }))
             targetLayer.agents.push(...agentsToAdd)
         })
     }

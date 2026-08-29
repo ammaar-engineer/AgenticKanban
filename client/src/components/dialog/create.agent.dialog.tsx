@@ -24,9 +24,10 @@ import { useProvidersQuery } from "@/hooks/provider.query"
 
 export type CreateAgentValues = {
     name: string
-    model: string
-    provider: string
+    model_id: string
+    provider_id: number
     personality: string
+    description: string
 }
 
 export function CreateAgentDialog({
@@ -39,25 +40,28 @@ export function CreateAgentDialog({
     onSubmit: (values: CreateAgentValues) => void
 }) {
     const [name, setName] = useState("")
-    const [model, setModel] = useState("")
-    const [provider, setProvider] = useState("")
+    const [model_id, setModelId] = useState("")
+    const [provider_id, setProviderId] = useState<number | "">("")
     const [personality, setPersonality] = useState("")
+    const [description, setDescription] = useState("")
 
     const {data: providers} = useProvidersQuery()
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault()
-        if (!name.trim() || !model.trim() || !provider) return
+        if (!name.trim() || !model_id.trim() || !provider_id) return
         onSubmit({
             name: name.trim(),
-            model: model.trim(),
-            provider,
-            personality: personality.trim()
+            model_id: model_id.trim(),
+            provider_id: Number(provider_id),
+            personality: personality.trim(),
+            description: description.trim()
         })
         setName("")
-        setModel("")
-        setProvider("")
+        setModelId("")
+        setProviderId("")
         setPersonality("")
+        setDescription("")
         onOpenChange(false)
     }
 
@@ -87,21 +91,21 @@ export function CreateAgentDialog({
                         <Label htmlFor="agent-model">Model</Label>
                         <Input
                             id="agent-model"
-                            value={model}
-                            onChange={(e) => setModel(e.target.value)}
+                            value={model_id}
+                            onChange={(e) => setModelId(e.target.value)}
                             placeholder="Example: gpt-4, claude-opus"
                         />
                     </div>
 
                     <div className="flex flex-col gap-1.5">
                         <Label htmlFor="agent-provider">Provider</Label>
-                        <Select value={provider} onValueChange={(value) => setProvider(value || "")}>
+                        <Select value={provider_id === "" ? "" : String(provider_id)} onValueChange={(value) => setProviderId(Number(value))}>
                             <SelectTrigger className="w-full" id="agent-provider">
                                 <SelectValue placeholder="Pilih provider" />
                             </SelectTrigger>
                             <SelectContent>
-                                {providers?.map((p, i) => (
-                                    <SelectItem key={i} value={p.name}>
+                                {providers?.map((p) => (
+                                    <SelectItem key={p.id} value={String(p.id)}>
                                         {p.name}
                                     </SelectItem>
                                 ))}
@@ -119,6 +123,17 @@ export function CreateAgentDialog({
                             placeholder="Describe agent personality and behavior..."
                         />
                     </div>
+
+                    <div className="flex flex-col gap-1.5">
+                        <Label htmlFor="agent-description">Description</Label>
+                        <Textarea
+                            className="h-40"
+                            id="agent-description"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Describe what this agent does..."
+                        />
+                    </div>
                 </form>
 
                 <DialogFooter>
@@ -126,7 +141,7 @@ export function CreateAgentDialog({
                     <Button
                         type="submit"
                         form="create-agent-form"
-                        disabled={!name.trim() || !model.trim() || !provider}
+                        disabled={!name.trim() || !model_id.trim() || !provider_id}
                     >
                         Add Agent
                     </Button>

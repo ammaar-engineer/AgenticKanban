@@ -55,14 +55,14 @@ export function AgentDetailDialog({
                         <div className="flex flex-col gap-1.5">
                             <span className="text-xs font-medium text-muted-foreground">Model</span>
                             <Badge size="sm" className="w-fit font-mono">
-                                {agent.model}
+                                {agent.model_id}
                             </Badge>
                         </div>
 
                         <div className="flex flex-col gap-1.5">
                             <span className="text-xs font-medium text-muted-foreground">Provider</span>
                             <Badge size="sm" className="w-fit font-mono">
-                                {agent.provider}
+                                {agent.provider.name}
                             </Badge>
                         </div>
                     </div>

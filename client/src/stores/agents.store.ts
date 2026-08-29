@@ -1,25 +1,8 @@
-import { create } from "zustand";
-import { immer } from "zustand/middleware/immer";
-
 export type AgentType = {
-    id: string
+    id: number
     name: string
-    model: string
-    provider: string
+    model_id: string
     personality: string
+    description: string
+    provider: { name: string }
 }
- 
-type AgentDraft = {
-    agents: AgentType[]
-}
-
-type AgentStore = AgentDraft & {
-    mutate: (recipe: (draft: AgentDraft) => void) => void
-}
-
-export const useAgentStore = create<AgentStore>()(
-    immer(set => ({
-        agents: [],
-        mutate: recipe => set(recipe)
-    }))
-)

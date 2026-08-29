@@ -12,10 +12,14 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog"
 import type { Agent } from "@/stores/kanban.store"
-import { useAgentStore, type AgentType } from "@/stores/agents.store"
+import { type AgentType } from "@/stores/agents.store"
+import { useAgentsQuery } from "@/hooks/agent.query"
 
-// Helper to create unique key from agent (name + model + provider)
-const getAgentKey = (agent: { name: string; model: string; provider: string }) =>
+const getAgentKey = (agent: { name: string; model_id: string; provider: { name: string } }) =>
+    `${agent.name}|${agent.model_id}|${agent.provider.name}`
+
+// Key for local Agent type (kanban.store) — used for existing agents comparison
+const getLocalAgentKey = (agent: { name: string; model: string; provider: string }) =>
     `${agent.name}|${agent.model}|${agent.provider}`
 
 export function PickAgentDialog({
@@ -29,7 +33,7 @@ export function PickAgentDialog({
     onSync: (toAdd: AgentType[], toRemove: Agent[]) => void
     existingAgents?: Agent[]
 }) {
-    const agents = useAgentStore(s => s.agents)
+    const { data: agents = [] } = useAgentsQuery()
     const [selected, setSelected] = useState<string[]>([])
     const initialSelectedRef = useRef<string[]>([])
 
@@ -37,7 +41,7 @@ export function PickAgentDialog({
     useEffect(() => {
         if (open && existingAgents.length > 0) {
             // Create keys from existing agents (name + model + provider)
-            const existingKeys = existingAgents.map(getAgentKey)
+            const existingKeys = existingAgents.map(getLocalAgentKey)
             setSelected(existingKeys)
             initialSelectedRef.current = existingKeys
         } else if (open) {
@@ -61,7 +65,7 @@ export function PickAgentDialog({
         // Agents to remove: were selected initially, not selected now
         const keysToRemove = initialKeys.filter(k => !currentKeys.includes(k))
         const agentsToRemove = existingAgents.filter(a =>
-            keysToRemove.includes(getAgentKey(a))
+            keysToRemove.includes(getLocalAgentKey(a))
         )
 
         // Agents to add: selected now, weren't selected initially
@@ -112,7 +116,7 @@ export function PickAgentDialog({
                                             {agent.name}
                                         </span>
                                         <Badge size="sm" variant="primary" className="font-mono shrink-0">
-                                            {agent.provider}
+                                            {agent.provider.name}
                                         </Badge>
                                     </span>
                                 </label>
