@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ToastCategory } from "@/services/toast.category"
+
 
 export type CreateProviderValues = { name: string; url: string, apiKey: string }
 
@@ -30,10 +32,14 @@ export function CreateProviderDialog({
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault()
-        if (!name.trim() || !url.trim()) return
+        if (!url.startsWith('http://') || !url.startsWith("https://")) {
+            ToastCategory.warning("Invalid URL")
+            return
+        }
         onSubmit({ name: name.trim(), url: url.trim(), apiKey: apiKey.trim() })
         setName("")
         setUrl("")
+        setApiKey("")
         onOpenChange(false)
     }
 

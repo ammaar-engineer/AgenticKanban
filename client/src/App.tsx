@@ -19,6 +19,7 @@ import { BotIcon, ChevronRightIcon, HomeIcon, PanelLeftCloseIcon, PanelLeftOpenI
 import type { CSSProperties } from 'react'
 import { type ReactNode } from 'react'
 import { BrowserRouter, Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Toaster } from '@/components/ui/toast'
 import { MainDashboard } from './pages/main.dashboard'
 import { ProvidersDashboard } from './pages/providers.dashboard'
 import { AgentsDashboard } from './pages/agents.dashboard'
@@ -130,6 +131,7 @@ export default function Root() {
   return (
       <BrowserRouter>
         <Layout />
+        <Toaster />
       </BrowserRouter>
   )
 }

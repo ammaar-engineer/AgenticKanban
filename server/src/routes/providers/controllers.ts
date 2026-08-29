@@ -17,28 +17,10 @@ providers.get("/list", async c => {
     },
     loadEagerRelations: false
   });
-  // InternalError("Internal service error");
-  console.log(providerList)
   return c.json(
     StandardJsonResponse({
       message: "Success",
       data: providerList,
-    }),
-    200,
-  );
-});
-
-providers.get("/get/:providerName", async c => {
-  const providerTarget = await providerRepo.findOne({
-    where: {
-      name: c.req.param("providerName"),
-    },
-    loadEagerRelations: false,
-  });
-  return c.json(
-    StandardJsonResponse({
-      data: providerTarget,
-      message: "Success",
     }),
     200,
   );

@@ -7,45 +7,54 @@ import type { AgentType } from "@/stores/agents.store"
 import type { Agent, Layer } from "@/stores/kanban.store"
 import { useKanbanStore } from "@/stores/kanban.store"
 import { Trash2 } from "lucide-react"
+import { useMemo } from "react"
 import { Button } from "../ui/button"
 import { KanbanAgent } from "./kanban.agent"
 
 export function KanbanLayer({
     layer,
-    boardIndex,
-    layerIndex,
+    boardId,
 }: {
     layer: Layer
-    boardIndex: number
-    layerIndex: number
+    boardId: string
 }) {
     const mutate = useKanbanStore(s => s.mutate)
+    const boards = useKanbanStore(s => s.boards)
+    
+    const layerIndex = useMemo(() => {
+        const board = boards.find(b => b.id === boardId)
+        return board ? board.layers.findIndex(l => l.id === layer.id) : -1
+    }, [boards, boardId, layer.id])
+
     const [pickOpen, setPickOpen] = useState(false)
 
     const handleDeleteLayer = () => {
         mutate(state => {
-            state.boards[boardIndex].layers.splice(layerIndex, 1)
+            const board = state.boards.find(b => b.id === boardId)
+            if (board) {
+                const index = board.layers.findIndex(l => l.id === layer.id)
+                if (index !== -1) board.layers.splice(index, 1)
+            }
         })
     }
 
     const handleSyncAgents = (toAdd: AgentType[], toRemove: Agent[]) => {
         mutate(state => {
-            const layer = state.boards[boardIndex].layers[layerIndex]
+            const board = state.boards.find(b => b.id === boardId)
+            const targetLayer = board?.layers.find(l => l.id === layer.id)
+            if (!targetLayer) return
 
-            // Remove agents (match by name+model+provider)
+            // Remove agents (match by id)
             toRemove.forEach(agentToRemove => {
-                const removeKey = `${agentToRemove.name}|${agentToRemove.model}|${agentToRemove.provider}`
-                const index = layer.agents.findIndex(a =>
-                    `${a.name}|${a.model}|${a.provider}` === removeKey
-                )
+                const index = targetLayer.agents.findIndex(a => a.id === agentToRemove.id)
                 if (index !== -1) {
-                    layer.agents.splice(index, 1)
+                    targetLayer.agents.splice(index, 1)
                 }
             })
 
             // Add new agents
-            const agentsToAdd: Agent[] = toAdd.map(({ name, model, provider }) => ({ name, model, provider }))
-            layer.agents.push(...agentsToAdd)
+            const agentsToAdd: Agent[] = toAdd.map(({ name, model, provider }) => ({ id: crypto.randomUUID(), name, model, provider }))
+            targetLayer.agents.push(...agentsToAdd)
         })
     }
 
@@ -79,13 +88,12 @@ export function KanbanLayer({
                 </span>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 overflow-y-scroll p-3">
-                {layer.agents.map((agent, agentIndex) => (
+                {layer.agents.map((agent) => (
                     <KanbanAgent
-                        key={agentIndex}
+                        key={agent.id}
                         agent={agent}
-                        boardIndex={boardIndex}
-                        layerIndex={layerIndex}
-                        agentIndex={agentIndex}
+                        boardId={boardId}
+                        layerId={layer.id}
                     />
                 ))}
                 <Button

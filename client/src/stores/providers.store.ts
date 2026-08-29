@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 export type ProvidersType = {
+    id: string
     name: string
     url: string
 }
@@ -16,10 +17,10 @@ type ProviderStore = ProviderDraft & {
 export const useProviderStore = create<ProviderStore>()(
     immer(set => ({
         providers: [
-            { id: 0, name: "OpenAI", url: "https://api.openai.com" },
-            { id: 1, name: "Anthropic", url: "https://api.anthropic.com" },
-            { id: 2, name: "Google", url: "https://generativelanguage.googleapis.com" },
-            { id: 3, name: "Ollama", url: "http://localhost:11434" },
+            { id: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d", name: "OpenAI", url: "https://api.openai.com" },
+            { id: "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e", name: "Anthropic", url: "https://api.anthropic.com" },
+            { id: "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f", name: "Google", url: "https://generativelanguage.googleapis.com" },
+            { id: "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80", name: "Ollama", url: "http://localhost:11434" },
         ],
         mutate: recipe => set(recipe)
     }))

@@ -1,13 +1,13 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
-import { Agent, Provider } from "../entities/index.js";
+import { Agent, Provider, KanbanBoard, KanbanLayer, KanbanAgent } from "../entities/index.js";
 
 const dbPath = process.env.DB_FILE_NAME?.replace("file:", "") || "racersr.db";
 
 export const AppDataSource = new DataSource({
   type: "better-sqlite3",
   database: dbPath,
-  entities: [Provider, Agent],
+  entities: [Provider, Agent, KanbanBoard, KanbanLayer, KanbanAgent],
   synchronize: true,
   logging: false,
 });

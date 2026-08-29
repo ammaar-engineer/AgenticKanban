@@ -2,12 +2,13 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 export type AgentType = {
+    id: string
     name: string
     model: string
     provider: string
     personality: string
 }
-
+ 
 type AgentDraft = {
     agents: AgentType[]
 }

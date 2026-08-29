@@ -5,27 +5,23 @@ import { CreateProviderDialog, type CreateProviderValues } from "@/components/di
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { useProviderStore, type ProvidersType } from "@/stores/providers.store"
+import { useCreateProviderMutation, useDeleteProviderMutation } from "@/hooks/provider.mutation"
+import { useProvidersQuery } from "@/hooks/provider.query"
 
 export function ProvidersDashboard() {
-    const { mutate, providers } = useProviderStore()
     const [dialogOpen, setDialogOpen] = useState(false)
 
+    const { data: providers = [] } = useProvidersQuery()
+    const createMutation = useCreateProviderMutation()
+    const deleteMutation = useDeleteProviderMutation()
+
     const handleCreate = (values: CreateProviderValues) => {
-        const provider: ProvidersType = {
-            name: values.name,
-            url: values.url,
-        }
-        mutate(p => {
-            p.providers = [...p.providers, provider]
-        })
+        createMutation.mutate(values)
         setDialogOpen(false)
     }
 
     const handleDelete = (name: string) => {
-        mutate(p => {
-            p.providers = p.providers.filter(target => target.name !== name)
-        })
+        deleteMutation.mutate(name)
     }
 
     return (
@@ -42,9 +38,9 @@ export function ProvidersDashboard() {
             <div className="flex-1 overflow-y-auto p-4">
                 {providers.length > 0 ? (
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {providers.map((provider, i) => (
+                        {providers.map((provider) => (
                             <Card
-                                key={i}
+                                key={provider.id}
                                 className="group relative flex-row gap-3 pl-4 rounded-xl pt-4 py-4 transition-colors"
                             >
                                 {/* Delete — top-right, hidden sampai hover */}

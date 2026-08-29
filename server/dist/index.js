@@ -1,15 +1,18 @@
 import { serve } from "@hono/node-server";
 import "dotenv/config";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { AppDataSource, initializeDatabase } from "./config/database.config.js";
-import { agents } from "./Routes/agents/controllers.js";
-import { providers } from "./Routes/providers/controllers.js";
+import { agents } from "./routes/agents/controllers.js";
+import { providers } from "./routes/providers/controllers.js";
 import { CustomError } from "./utils/custom.httpexception.js";
 const app = new Hono();
+app.use(cors());
 try {
     await initializeDatabase();
 }
-catch {
+catch (err) {
+    console.log(err);
     console.log("Database failed to get connection");
     process.exit(1);
 }

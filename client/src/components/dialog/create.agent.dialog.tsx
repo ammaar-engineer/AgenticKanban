@@ -20,7 +20,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { useProviderStore } from "@/stores/providers.store"
+import { useProvidersQuery } from "@/hooks/provider.query"
 
 export type CreateAgentValues = {
     name: string
@@ -43,7 +43,7 @@ export function CreateAgentDialog({
     const [provider, setProvider] = useState("")
     const [personality, setPersonality] = useState("")
 
-    const providers = useProviderStore(s => s.providers)
+    const {data: providers} = useProvidersQuery()
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault()
@@ -100,7 +100,7 @@ export function CreateAgentDialog({
                                 <SelectValue placeholder="Pilih provider" />
                             </SelectTrigger>
                             <SelectContent>
-                                {providers.map((p, i) => (
+                                {providers?.map((p, i) => (
                                     <SelectItem key={i} value={p.name}>
                                         {p.name}
                                     </SelectItem>
