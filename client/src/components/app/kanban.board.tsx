@@ -6,19 +6,28 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Board } from "@/stores/kanban.store";
 import { useKanbanStore } from "@/stores/kanban.store";
+import { useBoardDetailQuery } from "@/hooks/kanban.query";
+import { useCreateLayerMutation } from "@/hooks/kanban-layer.mutation";
 import { KanbanLayer } from "./kanban.layer";
 
 export function KanbanBoard({ board }: { board: Board }) {
   const [layerDialogOpen, setLayerDialogOpen] = useState(false);
   const mutate = useKanbanStore((s) => s.mutate);
+  const createLayer = useCreateLayerMutation();
+
+  const { data: detail, isLoading } = useBoardDetailQuery(board.id);
+
+  const layers = detail?.layers ?? [];
 
   const handleAddLayer = (name: string) => {
-    mutate((state) => {
-      const target = state.boards.find((b) => b.id === board.id);
-      if (target) {
-        target.layers.push({ id: crypto.randomUUID(), name, agents: [] });
-      }
-    });
+    createLayer.mutate(
+      { name, board_id: board.id },
+      {
+        onSuccess: () => {
+          setLayerDialogOpen(false);
+        },
+      },
+    );
   };
 
   const handleDeleteBoard = () => {
@@ -60,9 +69,13 @@ export function KanbanBoard({ board }: { board: Board }) {
         </Button>
       </div>
       <div className="flex w-full min-h-0 flex-1 items-start gap-4 overflow-x-auto p-4">
-        {board.layers.map((layer) => (
-          <KanbanLayer key={layer.id} boardId={board.id} layer={layer} />
-        ))}
+        {isLoading ? (
+          <span className="text-sm text-muted-foreground px-2">Loading layers...</span>
+        ) : (
+          layers.map((layer, index) => (
+            <KanbanLayer key={layer.id} boardId={board.id} layer={layer} layerIndex={index} />
+          ))
+        )}
         <Button
           variant="outline"
           className="flex h-9 w-85 shrink-0 items-center justify-center gap-2 rounded-xl border-dashed border-border/60 text-sm text-muted-foreground hover:border-primary/50 hover:text-foreground"
@@ -78,7 +91,6 @@ export function KanbanBoard({ board }: { board: Board }) {
         onOpenChange={setLayerDialogOpen}
         onSubmit={({ name }) => {
           handleAddLayer(name);
-          setLayerDialogOpen(false);
         }}
       />
     </div>

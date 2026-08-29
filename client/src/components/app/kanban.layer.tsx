@@ -7,24 +7,19 @@ import type { AgentType } from "@/stores/agents.store"
 import type { Agent, Layer } from "@/stores/kanban.store"
 import { useKanbanStore } from "@/stores/kanban.store"
 import { Trash2 } from "lucide-react"
-import { useMemo } from "react"
 import { Button } from "../ui/button"
 import { KanbanAgent } from "./kanban.agent"
 
 export function KanbanLayer({
     layer,
     boardId,
+    layerIndex,
 }: {
     layer: Layer
     boardId: string
+    layerIndex: number
 }) {
     const mutate = useKanbanStore(s => s.mutate)
-    const boards = useKanbanStore(s => s.boards)
-    
-    const layerIndex = useMemo(() => {
-        const board = boards.find(b => b.id === boardId)
-        return board ? board.layers.findIndex(l => l.id === layer.id) : -1
-    }, [boards, boardId, layer.id])
 
     const [pickOpen, setPickOpen] = useState(false)
 

@@ -5,6 +5,8 @@ import { cors } from "hono/cors";
 import { AppDataSource, initializeDatabase } from "./config/database.config.js";
 import { agents } from "./routes/agents/controllers.js";
 import { providers } from "./routes/providers/controllers.js";
+import { kanbanBoards } from "./routes/kanban.boards/controllers.js";
+import { kanbanLayers } from "./routes/kanban.layers/controllers.js";
 import type { StandardResponse } from "./types/standard.response.js";
 import { CustomError } from "./utils/custom.httpexception.js";
 
@@ -22,6 +24,8 @@ try {
 
 app.route("/providers", providers);
 app.route("/agents", agents);
+app.route("/kanban-boards", kanbanBoards);
+app.route("/kanban-layers", kanbanLayers);
 
 app.onError((err, c) => {
   if (err instanceof CustomError) {

@@ -5,28 +5,27 @@ import { KanbanBoard } from "@/components/app/kanban.board"
 import { CreateKanbanBoardDialog, type CreateKanbanBoardValues } from "@/components/dialog/create.kanban.board.dialog"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { selectActiveBoard, type Board, useKanbanStore } from "@/stores/kanban.store"
+import { useBoardsQuery } from "@/hooks/kanban.query"
+import { useCreateBoardMutation } from "@/hooks/kanban.mutation"
 
 export function MainDashboard() {
     const [dialogOpen, setDialogOpen] = useState(false)
+    const [activeBoardId, setActiveBoardId] = useState<string | null>(null)
 
-    const boards = useKanbanStore(s => s.boards)
-    const activeBoardId = useKanbanStore(s => s.activeBoardId)
-    const mutate = useKanbanStore(s => s.mutate)
-    const activeBoard = useKanbanStore(selectActiveBoard)
+    const { data: boards = [], isLoading } = useBoardsQuery()
+    const activeBoard = boards.find(b => b.id === activeBoardId) ?? null
+
+    const createBoard = useCreateBoardMutation()
 
     const handleCreate = (values: CreateKanbanBoardValues) => {
-        mutate(state => {
-            const board: Board = {
-                id: crypto.randomUUID(),
-                name: values.name,
-                description: values.description,
-                layers: [],
-            }
-            state.boards.push(board)
-            state.activeBoardId = board.id
-        })
-        setDialogOpen(false)
+        createBoard.mutate(
+            { name: values.name, description: values.description || undefined },
+            {
+                onSuccess: () => {
+                    setDialogOpen(false)
+                },
+            },
+        )
     }
 
     return (
@@ -41,12 +40,15 @@ export function MainDashboard() {
 
             {/* Board picker */}
             <div className="flex gap-2 border-b border-border/60 px-2 py-3 w-full overflow-x-scroll items-center">
+                {isLoading && (
+                    <span className="text-sm text-muted-foreground px-2">Loading boards...</span>
+                )}
                 {boards.map((board) => (
                     <Button
                         key={board.id}
                         variant="ghost"
                         size="sm"
-                        onClick={() => mutate(state => { state.activeBoardId = board.id })}
+                        onClick={() => setActiveBoardId(board.id)}
                         className={cn(
                             board.id === activeBoardId && "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
                             "px-3 py-3"
