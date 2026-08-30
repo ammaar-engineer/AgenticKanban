@@ -20,12 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useProvidersQuery } from "@/hooks/provider.query";
+import { useProvidersQuery } from "@/hooks/api/provider.query";
 
 export type CreateAgentValues = {
   name: string;
   model_id: string;
-  provider_id: number;
+  provider_id: string;
   personality: string;
   description: string;
 };
@@ -41,7 +41,7 @@ export function CreateAgentDialog({
 }) {
   const [name, setName] = useState("");
   const [model_id, setModelId] = useState("");
-  const [provider_id, setProviderId] = useState<number | "">("");
+  const [provider_id, setProviderId] = useState<string | "">("");
   const [personality, setPersonality] = useState("");
   const [description, setDescription] = useState("");
 
@@ -53,7 +53,7 @@ export function CreateAgentDialog({
     onSubmit({
       name: name.trim(),
       model_id: model_id.trim(),
-      provider_id: Number(provider_id),
+      provider_id,
       personality: personality.trim(),
       description: description.trim(),
     });
@@ -104,15 +104,17 @@ export function CreateAgentDialog({
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="agent-provider">Provider</Label>
             <Select
-              value={provider_id === "" ? "" : String(provider_id)}
-              onValueChange={(value) => setProviderId(Number(value))}
+              value={provider_id}
+              onValueChange={(value) => setProviderId(value ?? "")}
             >
               <SelectTrigger className="w-full" id="agent-provider">
-                <SelectValue placeholder="Pilih provider" />
+                <SelectValue placeholder="Pilih provider">
+                  {providers?.find((p) => p.id === provider_id)?.name}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {providers?.map((p) => (
-                  <SelectItem key={p.id} value={String(p.id)}>
+                  <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>
                 ))}

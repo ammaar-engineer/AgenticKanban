@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Board } from "@/stores/kanban.store";
 import { useKanbanStore } from "@/stores/kanban.store";
-import { useBoardDetailQuery } from "@/hooks/kanban.query";
-import { useCreateLayerMutation } from "@/hooks/kanban-layer.mutation";
+import { useCreateLayerMutation } from "@/hooks/api/kanban-layer.mutation";
 import { KanbanLayer } from "./kanban.layer";
+import { useBoardDetailQuery } from "@/hooks/api/kanban.query";
 
 export function KanbanBoard({ board }: { board: Board }) {
   const [layerDialogOpen, setLayerDialogOpen] = useState(false);
@@ -70,10 +70,17 @@ export function KanbanBoard({ board }: { board: Board }) {
       </div>
       <div className="flex w-full min-h-0 flex-1 items-start gap-4 overflow-x-auto p-4">
         {isLoading ? (
-          <span className="text-sm text-muted-foreground px-2">Loading layers...</span>
+          <span className="text-sm text-muted-foreground px-2">
+            Loading layers...
+          </span>
         ) : (
           layers.map((layer, index) => (
-            <KanbanLayer key={layer.id} boardId={board.id} layer={layer} layerIndex={index} />
+            <KanbanLayer
+              key={layer.id}
+              boardId={board.id}
+              layer={layer}
+              layerIndex={index}
+            />
           ))
         )}
         <Button

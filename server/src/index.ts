@@ -7,18 +7,18 @@ import { agents } from "./routes/agents/controllers.js";
 import { providers } from "./routes/providers/controllers.js";
 import { kanbanBoards } from "./routes/kanban.boards/controllers.js";
 import { kanbanLayers } from "./routes/kanban.layers/controllers.js";
+import { kanbanAgents } from "./routes/kanban.agents/controllers.js";
 import type { StandardResponse } from "./types/standard.response.js";
 import { CustomError } from "./utils/custom.httpexception.js";
 
 const app = new Hono();
 
-app.use(cors())
+app.use(cors());
 
 try {
   await initializeDatabase();
 } catch (err) {
-  console.log(err)
-  console.log("Database failed to get connection");
+  console.error("[DB] Failed to connect:", err);
   process.exit(1);
 }
 
@@ -26,10 +26,14 @@ app.route("/providers", providers);
 app.route("/agents", agents);
 app.route("/kanban-boards", kanbanBoards);
 app.route("/kanban-layers", kanbanLayers);
+app.route("/kanban-agents", kanbanAgents);
 
 app.onError((err, c) => {
+  const method = c.req.method;
+  const path = c.req.path;
+
   if (err instanceof CustomError) {
-    console.log(err.message);
+    console.error(`[Error] ${method} ${path} → ${err.statusCode} ${err.errorCode}: ${err.message}`);
     const ReturnJson: StandardResponse = {
       data: null,
       errorCode: err.errorCode,
@@ -37,9 +41,11 @@ app.onError((err, c) => {
       statusCode: err.statusCode,
       success: false,
     };
-    return c.json(ReturnJson, ReturnJson.statusCode as any);
+    return c.json(ReturnJson, err.statusCode as any);
   }
-  return c.json(err);
+
+  console.error(`[Unhandled] ${method} ${path}`, err);
+  return c.json({ success: false, message: "Internal server error" }, 500);
 });
 
 serve(
@@ -47,8 +53,8 @@ serve(
     fetch: app.fetch,
     port: 3000,
   },
-  info => {
-    console.log(`Server is running on http://localhost:${info.port}`);
+  (info) => {
+    console.log(`[Server] Running on http://localhost:${info.port}`);
   },
 );
 

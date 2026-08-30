@@ -4,18 +4,22 @@ import z from "zod";
 import { Provider } from "../../entities/provider.entity.js";
 import { AppDataSource } from "../../index.js";
 import { StandardJsonResponse } from "../../utils/response.wrapper.js";
+import { TypeOrmHandle } from "../../utils/typeorm.wrapper.js";
 
 export const providers = new Hono();
 const providerRepo = AppDataSource.getRepository(Provider);
 
 providers.get("/list", async c => {
-  const providerList = await providerRepo.find({
-    select: {
-      name: true,
-      url: true,
-      id: true,
-    },
-    loadEagerRelations: false
+  let providerList: any[] = [];
+  await TypeOrmHandle(async () => {
+    providerList = await providerRepo.find({
+      select: {
+        name: true,
+        url: true,
+        id: true,
+      },
+      loadEagerRelations: false,
+    });
   });
   return c.json(
     StandardJsonResponse({
@@ -27,7 +31,9 @@ providers.get("/list", async c => {
 });
 
 providers.delete("/delete/:providerName", async c => {
-  await providerRepo.delete({ name: c.req.param("providerName") });
+  await TypeOrmHandle(async () => {
+    await providerRepo.delete({ name: c.req.param("providerName") });
+  });
   return c.json(
     StandardJsonResponse({
       message: "Data has been deleted",
@@ -48,12 +54,10 @@ providers.post(
   ),
   async c => {
     const { name, apiKey, url } = c.req.valid("form");
-    try {
+    await TypeOrmHandle(async () => {
       await providerRepo.save(providerRepo.create({ name, url, apiKey }));
-    } catch {
-      console.log("ERror")
-    }
-    console.log("Provider has been created")
+    });
+    console.log("Provider has been created");
     return c.json(
       StandardJsonResponse({
         message: "Provider has been created",

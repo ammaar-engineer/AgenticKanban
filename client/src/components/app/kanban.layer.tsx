@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import type { AgentType } from "@/stores/agents.store"
 import type { Agent, Layer } from "@/stores/kanban.store"
 import { useKanbanStore } from "@/stores/kanban.store"
+import { createKanbanAgent, deleteKanbanAgent } from "@/services/api/kanban.agent.api"
 import { Trash2 } from "lucide-react"
 import { Button } from "../ui/button"
 import { KanbanAgent } from "./kanban.agent"
@@ -33,7 +34,23 @@ export function KanbanLayer({
         })
     }
 
-    const handleSyncAgents = (toAdd: AgentType[], toRemove: Agent[]) => {
+    const handleSyncAgents = async (toAdd: AgentType[], toRemove: Agent[]) => {
+        // Delete removed agents via API
+        for (const agentToRemove of toRemove) {
+            await deleteKanbanAgent(agentToRemove.id)
+        }
+
+        // Create new agents via API
+        for (const at of toAdd) {
+            await createKanbanAgent({
+                name: at.name,
+                agents_id: String(at.id),
+                layers_id: layer.id,
+                board_id: boardId,
+            })
+        }
+
+        // Update local state
         mutate(state => {
             const board = state.boards.find(b => b.id === boardId)
             const targetLayer = board?.layers.find(l => l.id === layer.id)

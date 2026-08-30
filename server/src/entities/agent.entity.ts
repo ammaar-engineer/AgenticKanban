@@ -18,8 +18,8 @@ export class Agent {
   @Column("text", { nullable: true })
   description?: string;
 
-  @Column("integer")
-  provider_id!: number;
+  @Column({ name: "provider_id", type: "varchar" })
+  provider_id!: string;
 
   @ManyToOne(() => Provider, (provider) => provider.agents, {
     onDelete: "CASCADE",

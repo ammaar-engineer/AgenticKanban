@@ -4,6 +4,7 @@ import z from "zod";
 import { KanbanLayer } from "../../entities/kanban-layer.entity.js";
 import { AppDataSource } from "../../index.js";
 import { StandardJsonResponse } from "../../utils/response.wrapper.js";
+import { TypeOrmHandle } from "../../utils/typeorm.wrapper.js";
 
 export const kanbanLayers = new Hono();
 const layerRepo = AppDataSource.getRepository(KanbanLayer);
@@ -19,11 +20,9 @@ kanbanLayers.post(
   ),
   async c => {
     const { name, board_id } = c.req.valid("form");
-    try {
+    await TypeOrmHandle(async () => {
       await layerRepo.save(layerRepo.create({ name, boardId: board_id }));
-    } catch {
-      console.log("Error creating kanban layer");
-    }
+    });
     console.log("Kanban layer has been created");
     return c.json(
       StandardJsonResponse({

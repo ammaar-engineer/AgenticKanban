@@ -4,6 +4,7 @@ import z from "zod";
 import { KanbanBoard } from "../../entities/kanban-board.entity.js";
 import { AppDataSource } from "../../index.js";
 import { StandardJsonResponse } from "../../utils/response.wrapper.js";
+import { TypeOrmHandle } from "../../utils/typeorm.wrapper.js";
 
 export const kanbanBoards = new Hono();
 const boardRepo = AppDataSource.getRepository(KanbanBoard);
@@ -17,13 +18,11 @@ kanbanBoards.post(
       description: z.string().optional(),
     }),
   ),
-  async (c) => {
+  async c => {
     const { name, description } = c.req.valid("form");
-    try {
+    await TypeOrmHandle(async () => {
       await boardRepo.save(boardRepo.create({ name, description }));
-    } catch {
-      console.log("Error creating kanban board");
-    }
+    });
     console.log("Kanban board has been created");
     return c.json(
       StandardJsonResponse({
@@ -33,14 +32,17 @@ kanbanBoards.post(
   },
 );
 
-kanbanBoards.get("/list", async (c) => {
-  const boardList = await boardRepo.find({
-    select: {
-      id: true,
-      name: true,
-      description: true,
-    },
-    loadEagerRelations: false,
+kanbanBoards.get("/list", async c => {
+  let boardList: any[] = [];
+  await TypeOrmHandle(async () => {
+    boardList = await boardRepo.find({
+      select: {
+        id: true,
+        name: true,
+        description: true,
+      },
+      loadEagerRelations: false,
+    });
   });
   return c.json(
     StandardJsonResponse({
@@ -51,7 +53,7 @@ kanbanBoards.get("/list", async (c) => {
   );
 });
 
-kanbanBoards.get("/detail", async (c) => {
+kanbanBoards.get("/detail", async c => {
   const boardId = c.req.query("boardId");
   if (!boardId) {
     return c.json(
@@ -62,19 +64,17 @@ kanbanBoards.get("/detail", async (c) => {
     );
   }
 
-  console.log("Board masuk");
-
-  const board = await boardRepo
-    .createQueryBuilder("board")
-    .leftJoinAndSelect("board.layers", "layer")
-    .leftJoinAndSelect("layer.kanbanAgents", "kanbanAgent")
-    .leftJoinAndSelect("kanbanAgent.agent", "agent")
-    .leftJoinAndSelect("agent.provider", "provider")
-    .where("board.id = :boardId", { boardId })
-    .getOne();
-
-  console.log(board);
-  console.log("Board keluar");
+  let board: any = null;
+  await TypeOrmHandle(async () => {
+    board = await boardRepo
+      .createQueryBuilder("board")
+      .leftJoinAndSelect("board.layers", "layer")
+      .leftJoinAndSelect("layer.kanbanAgents", "kanbanAgent")
+      .leftJoinAndSelect("kanbanAgent.agent", "agent")
+      .leftJoinAndSelect("agent.provider", "provider")
+      .where("board.id = :boardId", { boardId })
+      .getOne();
+  });
 
   if (!board) {
     return c.json(
@@ -94,8 +94,10 @@ kanbanBoards.get("/detail", async (c) => {
   );
 });
 
-kanbanBoards.delete("/delete/:boardId", async (c) => {
-  await boardRepo.delete({ id: c.req.param("boardId") });
+kanbanBoards.delete("/delete/:boardId", async c => {
+  await TypeOrmHandle(async () => {
+    await boardRepo.delete({ id: c.req.param("boardId") });
+  });
   return c.json(
     StandardJsonResponse({
       message: "Kanban board has been deleted",
