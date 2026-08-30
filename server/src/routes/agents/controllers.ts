@@ -1,9 +1,9 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import z from "zod";
+import { object, optional, string } from "superstruct";
 import { Agent } from "../../entities/agent.entity.js";
 import { AppDataSource } from "../../index.js";
 import { StandardJsonResponse } from "../../utils/response.wrapper.js";
+import { structValidator, UUID } from "../../utils/struct-validator.js";
 import { TypeOrmHandle } from "../../utils/typeorm.wrapper.js";
 
 export const agents = new Hono();
@@ -11,14 +11,13 @@ const agentRepo = AppDataSource.getRepository(Agent);
 
 agents.post(
   "/create",
-  zValidator(
-    "form",
-    z.object({
-      name: z.string(),
-      model_id: z.string(),
-      personality: z.string().optional(),
-      description: z.string().optional(),
-      provider_id: z.string().uuid("Valid provider ID is required"),
+  structValidator(
+    object({
+      name: string(),
+      model_id: string(),
+      personality: optional(string()),
+      description: optional(string()),
+      provider_id: UUID,
     }),
   ),
   async c => {

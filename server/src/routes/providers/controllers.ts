@@ -1,9 +1,9 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import z from "zod";
+import { object, string } from "superstruct";
 import { Provider } from "../../entities/provider.entity.js";
 import { AppDataSource } from "../../index.js";
 import { StandardJsonResponse } from "../../utils/response.wrapper.js";
+import { structValidator } from "../../utils/struct-validator.js";
 import { TypeOrmHandle } from "../../utils/typeorm.wrapper.js";
 
 export const providers = new Hono();
@@ -44,12 +44,11 @@ providers.delete("/delete/:providerName", async c => {
 
 providers.post(
   "/create",
-  zValidator(
-    "form",
-    z.object({
-      name: z.string(),
-      url: z.string(),
-      apiKey: z.string(),
+  structValidator(
+    object({
+      name: string(),
+      url: string(),
+      apiKey: string(),
     }),
   ),
   async c => {

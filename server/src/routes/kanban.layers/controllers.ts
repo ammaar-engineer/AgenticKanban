@@ -1,9 +1,9 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import z from "zod";
+import { object, string } from "superstruct";
 import { KanbanLayer } from "../../entities/kanban-layer.entity.js";
 import { AppDataSource } from "../../index.js";
 import { StandardJsonResponse } from "../../utils/response.wrapper.js";
+import { structValidator, UUID } from "../../utils/struct-validator.js";
 import { TypeOrmHandle } from "../../utils/typeorm.wrapper.js";
 
 export const kanbanLayers = new Hono();
@@ -11,11 +11,10 @@ const layerRepo = AppDataSource.getRepository(KanbanLayer);
 
 kanbanLayers.post(
   "/create",
-  zValidator(
-    "form",
-    z.object({
-      name: z.string().min(1, "Name is required"),
-      board_id: z.string().uuid("Valid board ID is required"),
+  structValidator(
+    object({
+      name: string(),
+      board_id: UUID,
     }),
   ),
   async c => {
