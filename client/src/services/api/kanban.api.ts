@@ -18,7 +18,7 @@ type BoardDetailResponse = {
             id: string
             name: string
             agent: {
-                id: number
+                id: string
                 name: string
                 model_id: string
                 provider: { name: string }

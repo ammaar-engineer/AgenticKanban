@@ -3,8 +3,8 @@ import { Provider } from "./provider.entity.js";
 
 @Entity("agents")
 export class Agent {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column("text")
   name!: string;

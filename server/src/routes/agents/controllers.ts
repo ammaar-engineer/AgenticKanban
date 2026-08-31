@@ -64,7 +64,7 @@ agents.get("/list", async c => {
 
 agents.delete("/delete/:agentId", async c => {
   await TypeOrmHandle(async () => {
-    await agentRepo.delete({ id: Number(c.req.param("agentId")) });
+    await agentRepo.delete({ id: c.req.param("agentId") });
   });
   return c.json(
     StandardJsonResponse({

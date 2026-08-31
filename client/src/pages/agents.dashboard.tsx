@@ -31,7 +31,7 @@ export function AgentsDashboard() {
     });
   };
 
-  const handleDelete = (agentId: number) => {
+  const handleDelete = (agentId: string) => {
     deleteMutation.mutate(agentId);
   };
 

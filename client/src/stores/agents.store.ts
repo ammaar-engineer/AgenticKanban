@@ -1,5 +1,5 @@
 export type AgentType = {
-    id: number
+    id: string
     name: string
     model_id: string
     personality: string

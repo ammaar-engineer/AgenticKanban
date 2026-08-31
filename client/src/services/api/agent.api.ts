@@ -31,6 +31,6 @@ export async function createAgent(payload: {
   }
 }
 
-export async function deleteAgent(agentId: number): Promise<void> {
+export async function deleteAgent(agentId: string): Promise<void> {
   await api.delete(`/agents/delete/${agentId}`);
 }
