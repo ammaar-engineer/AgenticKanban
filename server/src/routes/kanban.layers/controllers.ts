@@ -30,3 +30,15 @@ kanbanLayers.post(
     );
   },
 );
+
+kanbanLayers.delete("/delete/:layerId", async c => {
+  await TypeOrmHandle(async () => {
+    await layerRepo.delete({ id: c.req.param("layerId") });
+  });
+  return c.json(
+    StandardJsonResponse({
+      message: "Kanban layer has been deleted",
+    }),
+    200,
+  );
+});

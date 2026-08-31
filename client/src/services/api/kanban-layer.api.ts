@@ -12,3 +12,7 @@ export async function createLayer(payload: {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
     })
 }
+
+export async function deleteLayer(layerId: string): Promise<void> {
+    await api.delete(`/kanban-layers/delete/${layerId}`)
+}

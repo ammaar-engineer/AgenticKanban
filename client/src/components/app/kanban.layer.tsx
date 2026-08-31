@@ -1,12 +1,13 @@
 import { useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 
 import { PickAgentDialog } from "@/components/dialog/pick.agent.dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import type { AgentType } from "@/stores/agents.store"
-import type { Agent, Layer } from "@/stores/kanban.store"
-import { useKanbanStore } from "@/stores/kanban.store"
-import { createKanbanAgent, deleteKanbanAgent } from "@/services/api/kanban.agent.api"
+import type { Agent } from "@/stores/kanban.store"
+import { useDeleteLayerMutation } from "@/hooks/api/kanban-layer.mutation"
+import { useCreateKanbanAgentMutation, useDeleteKanbanAgentMutation } from "@/hooks/api/kanban-agent.mutation"
 import { Trash2 } from "lucide-react"
 import { Button } from "../ui/button"
 import { KanbanAgent } from "./kanban.agent"
@@ -16,58 +17,44 @@ export function KanbanLayer({
     boardId,
     layerIndex,
 }: {
-    layer: Layer
+    layer: { id: string; name: string; agents: Agent[] }
     boardId: string
     layerIndex: number
 }) {
-    const mutate = useKanbanStore(s => s.mutate)
-
+    const queryClient = useQueryClient()
     const [pickOpen, setPickOpen] = useState(false)
 
+    const deleteLayer = useDeleteLayerMutation()
+    const createKanbanAgent = useCreateKanbanAgentMutation()
+    const deleteKanbanAgent = useDeleteKanbanAgentMutation()
+
+    const invalidateBoard = () => {
+        queryClient.invalidateQueries({ queryKey: ["kanban-board-detail", boardId] })
+    }
+
     const handleDeleteLayer = () => {
-        mutate(state => {
-            const board = state.boards.find(b => b.id === boardId)
-            if (board) {
-                const index = board.layers.findIndex(l => l.id === layer.id)
-                if (index !== -1) board.layers.splice(index, 1)
-            }
-        })
+        deleteLayer.mutate(layer.id, { onSuccess: invalidateBoard })
     }
 
     const handleSyncAgents = async (toAdd: AgentType[], toRemove: Agent[]) => {
-        // Delete removed agents via API
-        for (const agentToRemove of toRemove) {
-            await deleteKanbanAgent(agentToRemove.id)
+        // Delete removed agents
+        for (const agent of toRemove) {
+            await new Promise<void>((resolve, reject) => {
+                deleteKanbanAgent.mutate(agent.id, { onSuccess: () => resolve(), onError: reject })
+            })
         }
 
-        // Create new agents via API
+        // Create new agents
         for (const at of toAdd) {
-            await createKanbanAgent({
-                name: at.name,
-                agents_id: String(at.id),
-                layers_id: layer.id,
-                board_id: boardId,
+            await new Promise<void>((resolve, reject) => {
+                createKanbanAgent.mutate(
+                    { name: at.name, agents_id: at.id, layers_id: layer.id, board_id: boardId },
+                    { onSuccess: () => resolve(), onError: reject },
+                )
             })
         }
 
-        // Update local state
-        mutate(state => {
-            const board = state.boards.find(b => b.id === boardId)
-            const targetLayer = board?.layers.find(l => l.id === layer.id)
-            if (!targetLayer) return
-
-            // Remove agents (match by id)
-            toRemove.forEach(agentToRemove => {
-                const index = targetLayer.agents.findIndex(a => a.id === agentToRemove.id)
-                if (index !== -1) {
-                    targetLayer.agents.splice(index, 1)
-                }
-            })
-
-            // Add new agents (convert AgentType from server to local Agent type)
-            const agentsToAdd: Agent[] = toAdd.map(({ name, model_id, provider }) => ({ id: crypto.randomUUID(), name, model: model_id, provider: provider.name }))
-            targetLayer.agents.push(...agentsToAdd)
-        })
+        invalidateBoard()
     }
 
     return (
